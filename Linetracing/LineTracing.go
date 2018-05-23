@@ -279,330 +279,325 @@ func main() {
           // 		}
           // 	}
   			
-  			 for i = 0; i < len(k.Document.Placemark);  i++ {
+ for i = 0; i < len(k.Document.Placemark);  i++ {
 
-          		
-          		arr:=splitLink(k.Document.Placemark[i].LineString.Coordinates)
+	
+	arr:=splitLink(k.Document.Placemark[i].LineString.Coordinates)
+
+	if len(arr) > 0 {
+		
+		for j = 0; j < len(arr)-1; j=j+2{                			
+								                
+    		s.SqlConn.Exec(fmt.Sprintf("INSERT INTO points(lat, lng) VALUES(%s, %s);", arr[j], arr[j+1]))	  
+    	
+	}		
+	}	
+
+}
+  		//Fetching all windmill points at same time
+for i = 0; i < len(k.Document.Folder);  i++ {
+
+	 for j = 0; j < len(k.Document.Folder[i].Placemark); j++ {
+    
+	    if p:= k.Document.Folder[i].Placemark[j].Point.Coordinates; p != ""{
+
+	    	if name:=k.Document.Folder[i].Placemark[j].Name; name=="WTG2100KW-S11X_PROPOSED"{
+                  
+        	  WindMillString:=k.Document.Folder[i].Placemark[j].Point.Coordinates
+        	  Temp:=splitStr(WindMillString)
+        	  WindMillPoint=append(WindMillPoint,Temp[0])
+        	  WindMillPoint=append(WindMillPoint,Temp[1])
+
+        	}
+
+        }
+    }
+}
+fmt.Println(WindMillPoint)
+//Ascending oreder of windmill
+
+for i = 0; i < len(WindMillPoint)-1; i=i+2 {
+
+    for j = i + 2; j < len(WindMillPoint)-1; j=j+2 {
+
+        if WindMillPoint[i] > WindMillPoint[j] {
+
+            a:=  WindMillPoint[i];
+            t:=  WindMillPoint[i+1];
+            WindMillPoint[i] = WindMillPoint[j];
+            WindMillPoint[i+1] = WindMillPoint[j+1];
+            WindMillPoint[j] = a;
+			WindMillPoint[j+1]=t;
+        }
+
+    }
+
+}
+fmt.Println(WindMillPoint)
+
+							
+
+//Fetching all windmill points one by one
+
+
+for i = 0; i < 8; i=i+2 {
+                      
+            p1,err:= strconv.ParseFloat(WindMillPoint[i], 64)
+            p2,err:=strconv.ParseFloat(WindMillPoint[i+1], 64)
+            if err != nil {
+	            panic(err)
+	         }
+            fmt.Println("WindMillPoint:",p1,p2)
+
+	WindMillDistance=WindMillDistance[:0]
+//Compare distance windmill to windmill
+for j = i; j < len(WindMillPoint)-1;  j=j+2 {
+
+
+	p3,_:= strconv.ParseFloat(WindMillPoint[j], 64)
+    p4,_:=strconv.ParseFloat(WindMillPoint[j+1], 64)
+
+
+    if(p3!=p1 && p4!=p2){
+                	
+	               
+        d=Distance(p2,p1,p4,p3)
+        WindMillDistance=append(WindMillDistance,d)
+ 		WindMillDistance=append(WindMillDistance,p3)
+   		WindMillDistance=append(WindMillDistance,p4)
+
+        fmt.Println("windmill to windmill distance is ",":",d,"Meters")
+			   
+			   	
+
+    }
+
+}
+			fmt.Println(WindMillDistance)
+		   	Small:=WindMillDistance[0]
+		   	long1= WindMillDistance[1];
+		   	lati= WindMillDistance[2];
+		   	for k:=3; k<len(WindMillDistance); k=k+3 {
+		   		 if(Small > WindMillDistance[k]){
+				       Small= WindMillDistance[k];
+				       long1= WindMillDistance[k+1];
+				       lati=WindMillDistance[k+2];
+					 }   
+		   	}
+		   	fmt.Println("Nearest windmill",Small,"meters",long1,lati)
+		   	//initial Windmill radius
+		   	NearestLineDisInitial,NearestLineCoInitialx,NearestLineCoInitialy=NearestLinestringCo(s,p1,p2)
+		   	 
+		   	// fmt.Println("Nearest Linestring co",Small,"meters",long2)
+		   	fmt.Println("Nearest Linestring co",NearestLineDisInitial,"meters",NearestLineCoInitialx,NearestLineCoInitialy)
+
+		   	//nearest windmill radius for linestring
+		   	NearestLineDisNext,NearestLineCoNextx,NearestLineCoNexty=NearestLinestringCo(s,long1,lati)
+
+	   
+		   	// fmt.Println("Nearest windmill's linestring co is",Small,"meters",long3)
+		   	fmt.Println("Nearest windmill's linestring co is",NearestLineDisNext,"meters",NearestLineCoNextx,NearestLineCoNexty)
+
+
+		   	//Total distance between one windmill to another
+		   	dis=0.0
+		   	for l:= 0; l < len(k.Document.Placemark);  l++ {
+
+          		arr=arr[:0]
+          		negative=0
+          		arr=splitLink(k.Document.Placemark[l].LineString.Coordinates)
+          		if NearestLineCoInitialy-lati < 0 {
+          				negative=1
+          		}
 
           		if len(arr) > 0 {
           			
           			for j = 0; j < len(arr)-1; j=j+2{
+                				
+					  		temp1,_:= strconv.ParseFloat(arr[j], 64)
 
-          				// p1,err:= strconv.ParseFloat(arr[j], 64)
-		            //     p2,err:=strconv.ParseFloat(arr[j+1], 64)
-        		    //     if err == nil {
-                			
-								                
-                        		s.SqlConn.Exec(fmt.Sprintf("INSERT INTO points(lat, lng) VALUES(%s, %s);", arr[j], arr[j+1]))	  
+	            		if temp1==NearestLineCoInitialx {
+								
+							temp2,_:= strconv.ParseFloat(arr[j+1], 64)
+							fmt.Println(temp1,temp2)
+							fmt.Println("here",negative)
+							check,_:=strconv.ParseFloat(arr[j+3], 64)
+
+							if j+2 < len(arr) && temp2-check < 0 && negative==1{
+
+								for c:= j-2; c >=0; c=c-2 {
+								
+
+				                longtitude1,_= strconv.ParseFloat(arr[c], 64)
+				                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
+				                d=Distance(temp2,temp1,latitude1,longtitude1)
+				                dis=dis+d
+				            	fmt.Println(longtitude1,latitude1)
+				                if longtitude1==NearestLineCoNextx{
+				                	flag=1
+				                 	break
+				                 }else{
+				                 	
+				                 	flag=0
+				                 }
+				                temp2=latitude1
+				                temp1=longtitude1 
+					         }
+										 
+						        }else{
+						        	for c:= j+2; c <len(arr)-1; c=c+2 {
+											
+
+						                longtitude1,_= strconv.ParseFloat(arr[c], 64)
+						                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
+						                d=Distance(temp2,temp1,latitude1,longtitude1)
+						                dis=dis+d
+						            	fmt.Println(longtitude1,latitude1)
+						                if longtitude1==NearestLineCoNextx{
+						                	flag=1
+						                 	break
+						                 }else{
+						                 	
+						                 	flag=0
+						                 }
+						                temp2=latitude1
+						                temp1=longtitude1 
+							         }
+						        	 
+						        }
+
+                        		}
                         	
+                		}//move to next placemark
+                		// fmt.Println("Nearest windmill distance is ",":",dis,"Meters")
+
+                		//move to next placemark
+                		if flag==0{
+                				fmt.Println(longtitude1,latitude1)
+                				NearestLineDisNextPm,NearestLineCoNextPmx,NearestLineCoNextPmy=NearestLinestringCo(s,longtitude1,latitude1)
+                		
+            			   	// fmt.Println("Nearest Linestring co",Small,"meters",long2)
+            			    fmt.Println("Nearest Linestring co of next placemark",NearestLineDisNextPm,"meters",NearestLineCoNextPmx,NearestLineCoNextPmy)
+
+                			for x:= 0; x < len(k.Document.Placemark);  x++ {
+
+                				arr=arr[:0]
+               					arr=splitLink(k.Document.Placemark[x].LineString.Coordinates)
+               					if len(arr) > 0 {
+
+               						for j = 0; j < len(arr)-1; j=j+2{
+                				
+	          				  		temp1,_:= strconv.ParseFloat(arr[j], 64)
+	          				  				/*if k.Document.Placemark[x].StyleUrl == "#msn_ylw-pushpin0"{
+	          				  					flag=1
+	          				  					goto NextPm
+	          				  				}*/
+	                        		if temp1==NearestLineCoNextPmx {
+											
+										temp2,_:= strconv.ParseFloat(arr[j+1], 64)
+										fmt.Println(temp1,temp2)
+									fmt.Println("here",negative)
+										
+										if j+2 < len(arr){ 
+
+											check,_:=strconv.ParseFloat(arr[j+3], 64)
+											if temp2-check < 0 && negative==1{
+
+											for c:= j+2; c <len(arr)-1; c=c+2 {
+    											
+
+								                longtitude1,_= strconv.ParseFloat(arr[c], 64)
+								                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
+								                d=Distance(temp2,temp1,latitude1,longtitude1)
+								                dis=dis+d
+								            	fmt.Println(longtitude1,latitude1)
+								                if longtitude1==NearestLineCoNextx{
+								                	flag=1
+								                 	break
+								                 }else{
+								                 	
+								                 	flag=0
+								                 }
+								                temp2=latitude1
+								                temp1=longtitude1 
+								         }
+							         }else{
+
+											for c:= j-2; c >= 0; c=c-2 {
+    											
+
+								                longtitude1,_= strconv.ParseFloat(arr[c], 64)
+								                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
+								                d=Distance(temp2,temp1,latitude1,longtitude1)
+								                dis=dis+d
+								            	fmt.Println(longtitude1,latitude1)
+								                if longtitude1==NearestLineCoNextx{
+								                	flag=1
+								                 	break
+								                 }else{
+								                 	
+								                 	flag=0
+								                 }
+								                temp2=latitude1
+								                temp1=longtitude1 
+							         } 
+							     }
+							   }else{//j+2
+							   				check,_:=strconv.ParseFloat(arr[j-1], 64)
+											if temp2-check < 0 && negative==1{
+
+											for c:= j+2; c <len(arr)-1; c=c+2 {
+    											
+
+								                longtitude1,_= strconv.ParseFloat(arr[c], 64)
+								                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
+								                d=Distance(temp2,temp1,latitude1,longtitude1)
+								                dis=dis+d
+								            	fmt.Println(longtitude1,latitude1)
+								                if longtitude1==NearestLineCoNextx{
+								                	flag=1
+								                 	break
+								                 }else{
+								                 	
+								                 	flag=0
+								                 }
+								                temp2=latitude1
+								                temp1=longtitude1 
+								         }
+							         }else{
+
+											for c:= j-2; c >= 0; c=c-2 {
+    											
+
+								                longtitude1,_= strconv.ParseFloat(arr[c], 64)
+								                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
+								                d=Distance(temp2,temp1,latitude1,longtitude1)
+								                dis=dis+d
+								            	fmt.Println(longtitude1,latitude1)
+								                if longtitude1==NearestLineCoNextx{
+								                	flag=1
+								                 	break
+								                 }else{
+								                 	
+								                 	flag=0
+								                 }
+								                temp2=latitude1
+								                temp1=longtitude1 
+							         } 
+							     }
+							   }
+                        		}
+               					}
+
                 		}		
-          			}	
+          			}
+
 
           		}
-          		//Fetching all windmill points at same time
-           for i = 0; i < len(k.Document.Folder);  i++ {
-            
-           	 for j = 0; j < len(k.Document.Folder[i].Placemark); j++ {
-            
-                if p:= k.Document.Folder[i].Placemark[j].Point.Coordinates; p != ""{
 
-                	if name:=k.Document.Folder[i].Placemark[j].Name; name=="WTG2100KW-S11X_PROPOSED"{
-                          
-                	  WindMillString:=k.Document.Folder[i].Placemark[j].Point.Coordinates
-                	  Temp:=splitStr(WindMillString)
-                	  WindMillPoint=append(WindMillPoint,Temp[0])
-                	  WindMillPoint=append(WindMillPoint,Temp[1])
+          	}
 
-                	}
-
-                }
-            }
-        }
-        	fmt.Println(WindMillPoint)
-	        //Ascending oreder of windmill
-
-	        for i = 0; i < len(WindMillPoint)-1; i=i+2 {
-	 
-	            for j = i + 2; j < len(WindMillPoint)-1; j=j+2 {
-	 
-	                if WindMillPoint[i] > WindMillPoint[j] {
-	 
-	                    a:=  WindMillPoint[i];
-	                    t:=  WindMillPoint[i+1];
-	                    WindMillPoint[i] = WindMillPoint[j];
-	                    WindMillPoint[i+1] = WindMillPoint[j+1];
-	                    WindMillPoint[j] = a;
-	 										WindMillPoint[j+1]=t;
-	                }
-	 
-	            }
-	 
-	        }
-	        fmt.Println(WindMillPoint)
-
-       								
-
-           //Fetching all windmill points one by one
-	  
-
-         for i = 0; i < 8; i=i+2 {
-                      
-                        p1,err:= strconv.ParseFloat(WindMillPoint[i], 64)
-                        p2,err:=strconv.ParseFloat(WindMillPoint[i+1], 64)
-                        if err != nil {
-				            panic(err)
-				         }
-                        fmt.Println("WindMillPoint:",p1,p2)
-
-           	WindMillDistance=WindMillDistance[:0]
-        	//Compare distance windmill to windmill
-        for j = i; j < len(WindMillPoint)-1;  j=j+2 {
-
-        	
-        		p3,_:= strconv.ParseFloat(WindMillPoint[j], 64)
-                p4,_:=strconv.ParseFloat(WindMillPoint[j+1], 64)
-
-
-                if(p3!=p1 && p4!=p2){
-                	
-				               
-				                d=Distance(p2,p1,p4,p3)
-				                WindMillDistance=append(WindMillDistance,d)
-				         		WindMillDistance=append(WindMillDistance,p3)
-				           		WindMillDistance=append(WindMillDistance,p4)
-
-				                fmt.Println("windmill to windmill distance is ",":",d,"Meters")
-            			   
-            			   	
-
-                }
-
-        	}
-        				fmt.Println(WindMillDistance)
-            			   	Small:=WindMillDistance[0]
-            			   	long1= WindMillDistance[1];
-            			   	lati= WindMillDistance[2];
-            			   	for k:=3; k<len(WindMillDistance); k=k+3 {
-            			   		 if(Small > WindMillDistance[k]){
-								       Small= WindMillDistance[k];
-								       long1= WindMillDistance[k+1];
-								       lati=WindMillDistance[k+2];
-									 }   
-            			   	}
-            			   	fmt.Println("Nearest windmill",Small,"meters",long1,lati)
-            			   	//initial Windmill radius
-            			   	NearestLineDisInitial,NearestLineCoInitialx,NearestLineCoInitialy=NearestLinestringCo(s,p1,p2)
-            			   	 
-            			   	// fmt.Println("Nearest Linestring co",Small,"meters",long2)
-            			   	fmt.Println("Nearest Linestring co",NearestLineDisInitial,"meters",NearestLineCoInitialx,NearestLineCoInitialy)
-
-            			   	//nearest windmill radius for linestring
-            			   	NearestLineDisNext,NearestLineCoNextx,NearestLineCoNexty=NearestLinestringCo(s,long1,lati)
-
-                       
-            			   	// fmt.Println("Nearest windmill's linestring co is",Small,"meters",long3)
-            			   	fmt.Println("Nearest windmill's linestring co is",NearestLineDisNext,"meters",NearestLineCoNextx,NearestLineCoNexty)
-
-
-            			   	//Total distance between one windmill to another
-            			   	dis=0.0
-            			   	for l:= 0; l < len(k.Document.Placemark);  l++ {
-
-				          		arr=arr[:0]
-				          		negative=0
-				          		arr=splitLink(k.Document.Placemark[l].LineString.Coordinates)
-				          		if NearestLineCoInitialy-lati < 0 {
-				          				negative=1
-				          		}
-
-				          		if len(arr) > 0 {
-				          			
-				          			for j = 0; j < len(arr)-1; j=j+2{
-				                				
-				          				  		temp1,_:= strconv.ParseFloat(arr[j], 64)
-
-				                        		if temp1==NearestLineCoInitialx {
-														
-													temp2,_:= strconv.ParseFloat(arr[j+1], 64)
-													fmt.Println(temp1,temp2)
-													fmt.Println("here",negative)
-													check,_:=strconv.ParseFloat(arr[j+3], 64)
-
-													if j+2 < len(arr) && temp2-check < 0 && negative==1{
-
-															for c:= j-2; c >=0; c=c-2 {
-	            											
-
-											                longtitude1,_= strconv.ParseFloat(arr[c], 64)
-											                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
-											                d=Distance(temp2,temp1,latitude1,longtitude1)
-											                dis=dis+d
-											            	fmt.Println(longtitude1,latitude1)
-											                if longtitude1==NearestLineCoNextx{
-											                	flag=1
-											                 	break
-											                 }else{
-											                 	
-											                 	flag=0
-											                 }
-											                temp2=latitude1
-											                temp1=longtitude1 
-											         }
-														 
-										        }else{
-										        	for c:= j+2; c <len(arr)-1; c=c+2 {
-	            											
-
-											                longtitude1,_= strconv.ParseFloat(arr[c], 64)
-											                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
-											                d=Distance(temp2,temp1,latitude1,longtitude1)
-											                dis=dis+d
-											            	fmt.Println(longtitude1,latitude1)
-											                if longtitude1==NearestLineCoNextx{
-											                	flag=1
-											                 	break
-											                 }else{
-											                 	
-											                 	flag=0
-											                 }
-											                temp2=latitude1
-											                temp1=longtitude1 
-											         }
-										        	 
-										        }
-
-				                        		}
-				                        	
-				                		}//move to next placemark
-				                		// fmt.Println("Nearest windmill distance is ",":",dis,"Meters")
- 
-				                		//move to next placemark
-				                		if flag==0{
-				                				fmt.Println(longtitude1,latitude1)
-				                				NearestLineDisNextPm,NearestLineCoNextPmx,NearestLineCoNextPmy=NearestLinestringCo(s,longtitude1,latitude1)
-				                		
-				            			   	// fmt.Println("Nearest Linestring co",Small,"meters",long2)
-				            			    fmt.Println("Nearest Linestring co of next placemark",NearestLineDisNextPm,"meters",NearestLineCoNextPmx,NearestLineCoNextPmy)
-
-				                			for x:= 0; x < len(k.Document.Placemark);  x++ {
-
-				                				arr=arr[:0]
-				               					arr=splitLink(k.Document.Placemark[x].LineString.Coordinates)
-				               					if len(arr) > 0 {
-
-				               						for j = 0; j < len(arr)-1; j=j+2{
-				                				
-					          				  		temp1,_:= strconv.ParseFloat(arr[j], 64)
-					          				  				/*if k.Document.Placemark[x].StyleUrl == "#msn_ylw-pushpin0"{
-					          				  					flag=1
-					          				  					goto NextPm
-					          				  				}*/
-					                        		if temp1==NearestLineCoNextPmx {
-															
-														temp2,_:= strconv.ParseFloat(arr[j+1], 64)
-														fmt.Println(temp1,temp2)
-													fmt.Println("here",negative)
-														
-														if j+2 < len(arr){ 
-
-															check,_:=strconv.ParseFloat(arr[j+3], 64)
-															if temp2-check < 0 && negative==1{
-
-															for c:= j+2; c <len(arr)-1; c=c+2 {
-		            											
-
-												                longtitude1,_= strconv.ParseFloat(arr[c], 64)
-												                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
-												                d=Distance(temp2,temp1,latitude1,longtitude1)
-												                dis=dis+d
-												            	fmt.Println(longtitude1,latitude1)
-												                if longtitude1==NearestLineCoNextx{
-												                	flag=1
-												                 	break
-												                 }else{
-												                 	
-												                 	flag=0
-												                 }
-												                temp2=latitude1
-												                temp1=longtitude1 
-												         }
-											         }else{
-
-															for c:= j-2; c >= 0; c=c-2 {
-		            											
-
-												                longtitude1,_= strconv.ParseFloat(arr[c], 64)
-												                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
-												                d=Distance(temp2,temp1,latitude1,longtitude1)
-												                dis=dis+d
-												            	fmt.Println(longtitude1,latitude1)
-												                if longtitude1==NearestLineCoNextx{
-												                	flag=1
-												                 	break
-												                 }else{
-												                 	
-												                 	flag=0
-												                 }
-												                temp2=latitude1
-												                temp1=longtitude1 
-											         } 
-											     }
-											   }else{//j+2
-											   			check,_:=strconv.ParseFloat(arr[j-1], 64)
-															if temp2-check < 0 && negative==1{
-
-															for c:= j+2; c <len(arr)-1; c=c+2 {
-		            											
-
-												                longtitude1,_= strconv.ParseFloat(arr[c], 64)
-												                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
-												                d=Distance(temp2,temp1,latitude1,longtitude1)
-												                dis=dis+d
-												            	fmt.Println(longtitude1,latitude1)
-												                if longtitude1==NearestLineCoNextx{
-												                	flag=1
-												                 	break
-												                 }else{
-												                 	
-												                 	flag=0
-												                 }
-												                temp2=latitude1
-												                temp1=longtitude1 
-												         }
-											         }else{
-
-															for c:= j-2; c >= 0; c=c-2 {
-		            											
-
-												                longtitude1,_= strconv.ParseFloat(arr[c], 64)
-												                latitude1,_= strconv.ParseFloat(arr[c+1], 64)
-												                d=Distance(temp2,temp1,latitude1,longtitude1)
-												                dis=dis+d
-												            	fmt.Println(longtitude1,latitude1)
-												                if longtitude1==NearestLineCoNextx{
-												                	flag=1
-												                 	break
-												                 }else{
-												                 	
-												                 	flag=0
-												                 }
-												                temp2=latitude1
-												                temp1=longtitude1 
-											         } 
-											     }
-											   }
-				                        		}
-				               					}
-
-				                		}		
-				          			}
-
-
-				          		}
-
-				          	}
-
-				          } 
+          } 
                   		fmt.Println("Nearest windmill distance is ",":",dis,"Meters")
                   	  // NextPm:
 
