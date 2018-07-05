@@ -11,7 +11,7 @@ Currently,  kmllinetracing provides the following functionality:
 
 #### Prerequisites
 
-First you need clone the repo of golang geo
+First you need to clone the repo of golang geo
 
 ```
 git clone git@github.com:chiragp-webonise/golang-geo.git
