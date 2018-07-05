@@ -198,14 +198,17 @@ func main() {
 	var longtitude1, latitude1, NearestLineCoNextx float64
 	var d, long1, lati, NearestLineCoNextPmx, NearestLineCoInitialx, NearestLineCoInitialy float64
 	WindMillDistance := []float64{}
+	ActualDistance := []float64{}
+	AerialDistance := []float64{}
 	WindMillPoint := []string{}
 	arr := []string{}
 	flag := 0
 	negative := 0
-	WindMillName := 1
 	i := 0
 	j := 0
 	dis := 0.0
+	Small := 0.0
+
 	xml.Unmarshal(xmlData, &k)
 
 	jsonData, err := json.Marshal(k)
@@ -330,7 +333,7 @@ func main() {
 
 		}
 
-		Small := WindMillDistance[0]
+		Small = WindMillDistance[0]
 		long1 = WindMillDistance[1]
 		lati = WindMillDistance[2]
 		for k := 3; k < len(WindMillDistance); k = k + 3 {
@@ -510,9 +513,19 @@ func main() {
 			}
 
 		}
-		NextWindMillName := WindMillName + 1
-		fmt.Println("windmill distance from", WindMillName, "to", NextWindMillName, ":", dis, "Meters")
-		WindMillName = WindMillName + 1
+		// fmt.Println("windmill distance from", WindMillName, "to", NextWindMillName, ":", dis, "Meters")
+		ActualDistance = append(ActualDistance, dis)
+		AerialDistance = append(AerialDistance, Small)
+
 	}
+	fmt.Println("-------------------------------------------------------------------------")
+	fmt.Println("|  Source     |   Destination  |   Aerial distance   |  Actual distance |")
+	fmt.Println("-------------------------------------------------------------------------")
+	for i = 0; i < len(ActualDistance); i = i + 1 {
+		fmt.Println("|          ", i, "|              ", i+1, "|", AerialDistance[i], "|", ActualDistance[i], "|")
+
+	}
+	fmt.Println("-------------------------------------------------------------------------")
+
 	FlushTestDB(s)
 }
