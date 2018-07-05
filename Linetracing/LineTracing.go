@@ -1,7 +1,5 @@
 package main
 
-// DB=mysql GO_ENV=test go run LineTracing.go TEST.kml
-
 import (
 	"encoding/json"
 	"encoding/xml"
@@ -10,10 +8,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/golang-geo/geo"
-	// "database/sql"
 	"math"
 	"strconv"
+
+	"github.com/golang-geo/geo"
 )
 
 type kml struct {
@@ -134,21 +132,20 @@ func NearestLinestringCo(s *geo.SQLMapper, longtitude1 float64, latitude1 float6
 			RadiusData = append(RadiusData, la)
 		}
 	}
-	// fmt.Println("RadiusData", RadiusData)
+
 	RadiusDistance = RadiusDistance[:0]
 	for c := 0; c < len(RadiusData); c = c + 2 {
 		lo1 := RadiusData[c]
 		la1 := RadiusData[c+1]
-		// fmt.Println(p1,p2,lo1,la1)
+
 		d = Distance(latitude1, longtitude1, la1, lo1)
 
 		RadiusDistance = append(RadiusDistance, d)
 		RadiusDistance = append(RadiusDistance, lo1)
 		RadiusDistance = append(RadiusDistance, la1)
 
-		// fmt.Println("Linestring co distance is ",":",d,"Meters")
 	}
-	// fmt.Println("RadiusDistance", RadiusDistance)
+
 	Small := RadiusDistance[0]
 	long2 := RadiusDistance[1]
 	lati2 := RadiusDistance[2]
@@ -160,7 +157,7 @@ func NearestLinestringCo(s *geo.SQLMapper, longtitude1 float64, latitude1 float6
 
 		}
 	}
-	// fmt.Println("Nearest Linestring co",Small,"meters",long2)
+
 	return Small, long2, lati2
 }
 func Distance(lat1, lon1, lat2, lon2 float64) float64 {
@@ -183,11 +180,11 @@ func Distance(lat1, lon1, lat2, lon2 float64) float64 {
 
 func main() {
 
-	// if len(os.Args) < 2 {
-	// 	fmt.Println("Missing parameter, provide file name!")
-	// 	return
-	// }
-	xmlFile, err := os.Open( /*os.Args[1]*/ "TEST.kml")
+	if len(os.Args) < 2 {
+		fmt.Println("Missing parameter, provide file name!")
+		return
+	}
+	xmlFile, err := os.Open(os.Args[1] /*"TEST.kml"*/)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
@@ -198,8 +195,8 @@ func main() {
 	xmlData, _ := ioutil.ReadAll(xmlFile)
 
 	var k kml
-	var longtitude1, latitude1 /*NearestLineDisNext*/, NearestLineCoNextx /*NearestLineCoNexty*/ float64
-	var d, long1, lati /*NearestLineDisNextPm*/, NearestLineCoNextPmx /*NearestLineCoNextPmy NearestLineDisInitial*/, NearestLineCoInitialx, NearestLineCoInitialy float64
+	var longtitude1, latitude1, NearestLineCoNextx float64
+	var d, long1, lati, NearestLineCoNextPmx, NearestLineCoInitialx, NearestLineCoInitialy float64
 	WindMillDistance := []float64{}
 	WindMillPoint := []string{}
 	arr := []string{}
@@ -248,26 +245,6 @@ func main() {
 	if er != nil {
 		panic(er)
 	}
-	// for i = 0; i < len(k.Document.Folder);  i++ {
-
-	// 		 for j = 0; j < len(k.Document.Folder[i].Placemark); j++ {
-
-	// 		arr1:=splitLink(k.Document.Folder[i].Placemark[j].LineString.Coordinates)
-	// 		if len(arr1) > 0 {
-
-	// 			for j = 0; j < len(arr1)-1; j=j+2{
-
-	// 				// p1,err:= strconv.ParseFloat(arr[j], 64)
-	//     //     p2,err:=strconv.ParseFloat(arr[j+1], 64)
-	//     //     if err == nil {
-	//     //   			fmt.Println(p1,p2)
-
-	//               		s.SqlConn.Exec(fmt.Sprintf("INSERT INTO points(lat, lng) VALUES(%s, %s);", arr1[j], arr1[j+1]))
-
-	//       		}
-	// 			}
-	// 		}
-	// 	}
 
 	for i = 0; i < len(k.Document.Placemark); i++ {
 
@@ -302,7 +279,7 @@ func main() {
 			}
 		}
 	}
-	//fmt.Println(WindMillPoint)
+
 	//Ascending order of windmill
 
 	for i = 1; i < len(WindMillPoint)-1; i = i + 2 {
@@ -322,7 +299,6 @@ func main() {
 		}
 
 	}
-	//fmt.Println(WindMillPoint)
 
 	//Fetching all windmill points one by one
 
@@ -349,12 +325,10 @@ func main() {
 				WindMillDistance = append(WindMillDistance, p3)
 				WindMillDistance = append(WindMillDistance, p4)
 
-				// fmt.Println("windmill to windmill distance is ", ":", d, "Meters")
-
 			}
 
 		}
-		// fmt.Println(WindMillDistance)
+
 		Small := WindMillDistance[0]
 		long1 = WindMillDistance[1]
 		lati = WindMillDistance[2]
@@ -367,18 +341,12 @@ func main() {
 		}
 		fmt.Println("Nearest windmill", Small, "meters", long1, lati)
 		//initial Windmill radius
-		/*NearestLineDisInitial*/
+
 		_, NearestLineCoInitialx, NearestLineCoInitialy = NearestLinestringCo(s, p1, p2)
 
-		// fmt.Println("Nearest Linestring co",Small,"meters",long2)
-		// fmt.Println("Nearest Linestring co", NearestLineDisInitial, "meters", NearestLineCoInitialx, NearestLineCoInitialy)
-
 		//nearest windmill radius for linestring
-		/*NearestLineDisNext*/
-		_, NearestLineCoNextx /*NearestLineCoNexty*/, _ = NearestLinestringCo(s, long1, lati)
 
-		// fmt.Println("Nearest windmill's linestring co is",Small,"meters",long3)
-		// fmt.Println("Nearest windmill's linestring co is", NearestLineDisNext, "meters", NearestLineCoNextx, NearestLineCoNexty)
+		_, NearestLineCoNextx, _ = NearestLinestringCo(s, long1, lati)
 
 		//Total distance between one windmill to another
 		dis = 0.0
@@ -387,8 +355,7 @@ func main() {
 			arr = arr[:0]
 			negative = 0
 			arr = splitLink(k.Document.Placemark[l].LineString.Coordinates)
-			// fmt.Println("L", len(k.Document.Placemark))
-			// fmt.Println("Line strings", arr)
+
 			if NearestLineCoInitialy-lati < 0 {
 				negative = 1
 			}
@@ -402,8 +369,7 @@ func main() {
 					if temp1 == NearestLineCoInitialx {
 
 						temp2, _ := strconv.ParseFloat(arr[j+1], 64)
-						// fmt.Println(temp1, temp2)
-						// fmt.Println("here", negative, j)
+
 						check, _ := strconv.ParseFloat(arr[j+3], 64)
 
 						if j+2 < len(arr) && temp2-check < 0 && negative == 1 {
@@ -414,7 +380,7 @@ func main() {
 								latitude1, _ = strconv.ParseFloat(arr[c+1], 64)
 								d = Distance(temp2, temp1, latitude1, longtitude1)
 								dis = dis + d
-								// fmt.Println(longtitude1, latitude1)
+
 								if longtitude1 == NearestLineCoNextx {
 									flag = 0
 									break
@@ -434,7 +400,7 @@ func main() {
 								latitude1, _ = strconv.ParseFloat(arr[c+1], 64)
 								d = Distance(temp2, temp1, latitude1, longtitude1)
 								dis = dis + d
-								// fmt.Println(longtitude1, latitude1)
+
 								if longtitude1 == NearestLineCoNextx {
 									flag = 0
 									break
@@ -451,17 +417,9 @@ func main() {
 					}
 
 				} //move to next placemark
-				// fmt.Println("Nearest windmill distance is ",":",dis,"Meters")
-				//
-				//move to next placemark
 				if flag == 1 {
 
-					// fmt.Println(longtitude1, latitude1)
-					/*NearestLineDisNextPm*/
-					_, NearestLineCoNextPmx /*NearestLineCoNextPmy*/, _ = NearestLinestringCo(s, longtitude1, latitude1)
-
-					// fmt.Println("Nearest Linestring co",Small,"meters",long2)
-					// fmt.Println("Nearest Linestring co of next placemark", NearestLineDisNextPm, "meters", NearestLineCoNextPmx, NearestLineCoNextPmy)
+					_, NearestLineCoNextPmx, _ = NearestLinestringCo(s, longtitude1, latitude1)
 
 					for x := 0; x < len(k.Document.Placemark); x++ {
 
@@ -472,16 +430,11 @@ func main() {
 							for j = 0; j < len(arr)-1; j = j + 2 {
 
 								temp1, _ := strconv.ParseFloat(arr[j], 64)
-								/*if k.Document.Placemark[x].StyleUrl == "#msn_ylw-pushpin0"{
-									flag=1
-									goto NextPm
-								}*/
+
 								if temp1 == NearestLineCoNextPmx {
 
 									temp2, _ := strconv.ParseFloat(arr[j+1], 64)
-									// fmt.Println(temp1, temp2)
-									// fmt.Println("here", negative)
-									// fmt.Println("j arr", j, len(arr))
+
 									if j+2 < len(arr) {
 
 										check, _ := strconv.ParseFloat(arr[j+3], 64)
@@ -493,7 +446,7 @@ func main() {
 												latitude1, _ = strconv.ParseFloat(arr[c+1], 64)
 												d = Distance(temp2, temp1, latitude1, longtitude1)
 												dis = dis + d
-												// fmt.Println(longtitude1, latitude1)
+
 												if longtitude1 == NearestLineCoNextx {
 													flag = 0
 													break
@@ -505,8 +458,6 @@ func main() {
 												temp1 = longtitude1
 											}
 										} else {
-											// t := temp2 - check
-											// fmt.Println("check", t)
 
 											for c := j - 2; c >= 0; c = c - 2 {
 
@@ -514,7 +465,7 @@ func main() {
 												latitude1, _ = strconv.ParseFloat(arr[c+1], 64)
 												d = Distance(temp2, temp1, latitude1, longtitude1)
 												dis = dis + d
-												// fmt.Println(longtitude1, latitude1)
+
 												if longtitude1 == NearestLineCoNextx {
 													flag = 0
 													break
@@ -526,28 +477,7 @@ func main() {
 												temp1 = longtitude1
 											}
 										}
-									} else { //j+2
-										// check, _ := strconv.ParseFloat(arr[j-1], 64)
-										// if temp2-check < 0 && negative == 1 {
-
-										// 	for c := j + 2; c < len(arr)-1; c = c + 2 {
-
-										// 		longtitude1, _ = strconv.ParseFloat(arr[c], 64)
-										// 		latitude1, _ = strconv.ParseFloat(arr[c+1], 64)
-										// 		d = Distance(temp2, temp1, latitude1, longtitude1)
-										// 		dis = dis + d
-										// 		fmt.Println(longtitude1, latitude1)
-										// 		if longtitude1 == NearestLineCoNextx {
-										// 			flag = 0
-										// 			break
-										// 		} else {
-
-										// 			flag = 1
-										// 		}
-										// 		temp2 = latitude1
-										// 		temp1 = longtitude1
-										// 	}
-										// } else {
+									} else {
 
 										for c := j - 2; c >= 0; c = c - 2 {
 
@@ -555,7 +485,7 @@ func main() {
 											latitude1, _ = strconv.ParseFloat(arr[c+1], 64)
 											d = Distance(temp2, temp1, latitude1, longtitude1)
 											dis = dis + d
-											// fmt.Println(longtitude1, latitude1)
+
 											if longtitude1 == NearestLineCoNextx {
 												flag = 0
 												break
@@ -566,7 +496,7 @@ func main() {
 											temp2 = latitude1
 											temp1 = longtitude1
 										}
-										//}
+
 									}
 								}
 							}
@@ -580,7 +510,6 @@ func main() {
 
 		}
 		fmt.Println("Nearest windmill distance is ", ":", dis, "Meters")
-		// NextPm:
 
 	}
 	FlushTestDB(s)
