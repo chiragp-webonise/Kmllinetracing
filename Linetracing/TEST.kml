@@ -391,14 +391,14 @@
 				<coordinates>85.3362448643,25.0945360927,0</coordinates>
 			</Point>
 		</Placemark>
-		<Placemark>
+		<!--A18 <Placemark>
 			<name>WTG2100KW-S11X_PROPOSED</name>
 			<description><![CDATA[WTG2100KW-S11X_PROPOSED<BR><BR><B>ELEVATION</B> = 0.0]]></description>
 			<styleUrl>#point1</styleUrl>
 			<Point>
 				<coordinates>85.3310672322,25.0862168321,0</coordinates>
 			</Point>
-		</Placemark>
+		</Placemark> -->
 		<Placemark>
 			<name>WTG2100KW-S11X_PROPOSED</name>
 			<description><![CDATA[WTG2100KW-S11X_PROPOSED<BR><BR><B>ELEVATION</B> = 0.0]]></description>
