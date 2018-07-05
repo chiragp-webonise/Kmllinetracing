@@ -7,6 +7,16 @@ Currently,  kmllinetracing provides the following functionality:
 -finding nearest line string coordinate using circle radius formula with sql
 -4 windmill's placemark traced
 
+## Getting Started
+
+#### Prerequisites
+
+First you need clone the repo of golang geo
+
+```
+git clone git@github.com:chiragp-webonise/golang-geo.git
+```
+
 ## Running the code
 
 To run the code from Linetracing directory simply execute:
