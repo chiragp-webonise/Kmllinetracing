@@ -202,6 +202,7 @@ func main() {
 	arr := []string{}
 	flag := 0
 	negative := 0
+	WindMillName := 1
 	i := 0
 	j := 0
 	dis := 0.0
@@ -309,7 +310,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("WindMillPoint:", p1, p2)
+		// fmt.Println("WindMillPoint:", p1, p2)
 
 		WindMillDistance = WindMillDistance[:0]
 		//Compare distance windmill to windmill
@@ -339,7 +340,7 @@ func main() {
 				lati = WindMillDistance[k+2]
 			}
 		}
-		fmt.Println("Nearest windmill", Small, "meters", long1, lati)
+		// fmt.Println("Nearest windmill", Small, "meters", long1, lati)
 		//initial Windmill radius
 
 		_, NearestLineCoInitialx, NearestLineCoInitialy = NearestLinestringCo(s, p1, p2)
@@ -509,8 +510,9 @@ func main() {
 			}
 
 		}
-		fmt.Println("Nearest windmill distance is ", ":", dis, "Meters")
-
+		NextWindMillName := WindMillName + 1
+		fmt.Println("windmill distance from", WindMillName, "to", NextWindMillName, ":", dis, "Meters")
+		WindMillName = WindMillName + 1
 	}
 	FlushTestDB(s)
 }
